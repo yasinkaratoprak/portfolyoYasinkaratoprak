@@ -1,0 +1,11 @@
+{
+  "name": "portfolyoyasinkaratoprak",
+  "compatibility_date": "2026-07-23",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": ".",
+    "not_found_handling": "404-page"
+  }
+}
