@@ -1,0 +1,9 @@
+# Repo and tooling files that must not be served as site assets
+.git
+.idea
+.gitignore
+.wrangler
+.dev.vars*
+.env*
+node_modules
+wrangler.jsonc

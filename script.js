@@ -60,6 +60,12 @@ const translations = {
 const root = document.documentElement;
 const $ = (s) => document.querySelector(s);
 
+// localStorage can throw when storage is blocked; never let that stop the script
+const store = {
+  get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { localStorage.setItem(key, value); } catch {} },
+};
+
 // ——————————————————————————————————————————————
 // 2. THEME — follows system preference unless overridden
 // ——————————————————————————————————————————————
@@ -73,13 +79,12 @@ function renderThemeToggle() {
   themeToggle.textContent = effectiveTheme() === "dark" ? "☀" : "☾";
 }
 
-const storedTheme = localStorage.getItem("theme");
-if (storedTheme === "dark" || storedTheme === "light") root.dataset.theme = storedTheme;
+// The saved theme is applied before first paint by theme-init.js
 
 themeToggle.addEventListener("click", () => {
   const next = effectiveTheme() === "dark" ? "light" : "dark";
   root.dataset.theme = next;
-  localStorage.setItem("theme", next);
+  store.set("theme", next);
   renderThemeToggle();
 });
 systemDark.addEventListener("change", renderThemeToggle);
@@ -90,7 +95,7 @@ renderThemeToggle();
 // ——————————————————————————————————————————————
 const langToggle = $("#lang-toggle");
 let currentLang =
-  localStorage.getItem("lang") ||
+  store.get("lang") ||
   ((navigator.language || "").toLowerCase().startsWith("tr") ? "tr" : "en");
 
 function applyLanguage(lang) {
@@ -109,7 +114,7 @@ function applyLanguage(lang) {
 }
 langToggle.addEventListener("click", () => {
   const next = currentLang === "en" ? "tr" : "en";
-  localStorage.setItem("lang", next);
+  store.set("lang", next);
   applyLanguage(next);
 });
 applyLanguage(currentLang);
