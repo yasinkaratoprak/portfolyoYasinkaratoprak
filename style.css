@@ -343,7 +343,7 @@ main { max-width: var(--max-w); margin: 0 auto; padding: 0 1.5rem 4rem }
   border-radius: 8px;
   background: var(--focus-ring);
 }
-.contact-form { margin-top: 1.5rem; display: grid; gap: 1rem; max-width: 36rem }
+.contact-form { margin-top: 1.5rem; display: grid; gap: 1rem }
 .form-row { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr }
 .form-group { display: flex; flex-direction: column; gap: .35rem }
 .form-group label { font-size: .85rem; font-weight: 500; color: var(--text-2) }
