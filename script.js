@@ -1,6 +1,6 @@
 /* ============================================================
    PORTFOLIO — script.js
-   Theme (system-aware), language (EN/TR), contact-form status
+   Theme (system-aware), language (EN/TR), active nav, contact-form status
    ============================================================ */
 
 // ——————————————————————————————————————————————
@@ -16,8 +16,8 @@ const translations = {
     about_label_uni: "University", about_uni: "Yaşar University — Computer Engineering",
     about_label_focus: "Focus", about_focus: "Web, AI & Network Security",
     projects_title: "Projects",
-    proj_csrfpoc_desc: "An automated CSRF PoC Generator extension built for the modern Burp Suite Montoya API. It parses HTTP history requests to dynamically compile cross-origin exploit payloads. Supports standard urlencoded forms, text/plain JSON encapsulation bypasses, and multipart/form-data multi-file upload simulations using asynchronous JS Fetch and Blob arrays. Includes a native JDialog UI popup with instant clipboard staging.",
-    proj_repoverse_desc: "Repoverse is a web-based utility built to eliminate the friction of setting up new systems and testing environments. Supporting Ubuntu, Arch, Fedora, macOS, and Windows, it generates customized scripts to install developer tools, offensive security packages, and daily applications with a single command. Whether you are provisioning a fresh Linux environment or preparing a dedicated red teaming virtual machine, Repoverse instantly compiles the necessary package manager commands (apt, pacman, yay, brew, etc.) and readies them for immediate execution.",
+    proj_csrfpoc_desc: "A Burp Suite extension that turns a request from HTTP history into a CSRF proof of concept. It handles urlencoded forms, JSON sent as text/plain, and multipart file uploads, and copies the generated PoC to the clipboard.",
+    proj_repoverse_desc: "A web tool that builds a setup script for a fresh machine. Pick developer tools, security packages, and everyday apps, and it generates the install commands for your package manager (apt, pacman, yay, brew, and others).",
     talks_title: "Talks",
     pres_title: "IDOR Workshop",
     pres_desc: "Detection and Analysis of IDOR Vulnerabilities",
@@ -40,8 +40,8 @@ const translations = {
     about_label_uni: "Üniversite", about_uni: "Yaşar Üniversitesi — Bilgisayar Mühendisliği",
     about_label_focus: "İlgi Alanı", about_focus: "Web, Yapay Zeka & Ağ Güvenliği",
     projects_title: "Projeler",
-    proj_csrfpoc_desc: "Modern Burp Suite Montoya API mimarisi için geliştirilmiş otomasyon odaklı CSRF PoC jeneratör eklentisi. Gelen HTTP isteklerini analiz ederek amaca yönelik sömürü betikleri hazırlar; standart form verilerini, zayıf yapılandırılmış backend kontrol mekanizmalarını atlatmak için text/plain tabanlı JSON sarmalamalarını ve asenkron JS Fetch/Blob nesneleri kullanan çok parçalı (multipart) dosya yükleme senaryolarını destekler. Tek tıkla panoya kopyalama özellikli yerel JDialog arayüzü barındırır.",
-    proj_repoverse_desc: "Repoverse, yeni bir sistem veya test ortamı kurarken harcanan zamanı en aza indirmek için tasarlanmış web tabanlı bir araçtır. Ubuntu, Arch, Fedora, macOS ve Windows işletim sistemlerini destekleyerek; geliştirici araçlarını, siber güvenlik yazılımlarını ve günlük uygulamaları tek bir komutla kurmanızı sağlayan özel terminal betikleri üretir. İster yeni bir Linux ortamını kişiselleştiriyor olun, ister bir red teaming sanal makinesini hazırlıyor olun, Repoverse ihtiyaç duyduğunuz tüm paket yöneticisi (apt, pacman, yay, brew vb.) komutlarını saniyeler içinde oluşturup doğrudan kopyalamanıza olanak tanır.",
+    proj_csrfpoc_desc: "HTTP geçmişindeki bir isteği CSRF PoC'sine dönüştüren Burp Suite eklentisi. urlencoded formları, text/plain olarak gönderilen JSON'u ve multipart dosya yüklemelerini destekler; oluşturulan PoC'yi panoya kopyalar.",
+    proj_repoverse_desc: "Yeni bir makine için kurulum betiği hazırlayan web aracı. Seçtiğiniz geliştirici araçları, güvenlik paketleri ve günlük uygulamalar için paket yöneticinize uygun kurulum komutlarını üretir (apt, pacman, yay, brew vb.).",
     talks_title: "Sunumlar",
     pres_title: "IDOR Atölyesi",
     pres_desc: "IDOR Zafiyetlerinin Tespiti ve Analizi",
@@ -72,11 +72,16 @@ const store = {
 const themeToggle = $("#theme-toggle");
 const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
 
+const icon = (paths) =>
+  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+const ICON_SUN = icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>');
+const ICON_MOON = icon('<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>');
+
 function effectiveTheme() {
   return root.dataset.theme || (systemDark.matches ? "dark" : "light");
 }
 function renderThemeToggle() {
-  themeToggle.textContent = effectiveTheme() === "dark" ? "☀" : "☾";
+  themeToggle.innerHTML = effectiveTheme() === "dark" ? ICON_SUN : ICON_MOON;
 }
 
 // The saved theme is applied before first paint by theme-init.js
@@ -110,7 +115,9 @@ function applyLanguage(lang) {
     if (dict[key] !== undefined) el.placeholder = dict[key];
   });
   root.lang = lang;
-  langToggle.textContent = lang === "en" ? "TR" : "EN";
+  langToggle.querySelectorAll("[data-lang]").forEach((el) => {
+    el.classList.toggle("is-current", el.dataset.lang === lang);
+  });
 }
 langToggle.addEventListener("click", () => {
   const next = currentLang === "en" ? "tr" : "en";
@@ -120,7 +127,38 @@ langToggle.addEventListener("click", () => {
 applyLanguage(currentLang);
 
 // ——————————————————————————————————————————————
-// 4. CONTACT FORM — success notice after FormSubmit redirect
+// 4. ACTIVE NAV — marks the section currently in view
+// ——————————————————————————————————————————————
+const navLinks = [...document.querySelectorAll('.site-nav a[href^="#"]')];
+const navSections = navLinks.map((a) => document.querySelector(a.hash));
+
+function updateActiveNav() {
+  const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+  let active = atBottom ? navLinks.length - 1 : -1;
+  if (!atBottom) {
+    navSections.forEach((s, i) => {
+      if (s.getBoundingClientRect().top <= innerHeight * 0.4) active = i;
+    });
+  }
+  navLinks.forEach((a, i) => {
+    if (i === active) a.setAttribute("aria-current", "location");
+    else a.removeAttribute("aria-current");
+  });
+}
+
+let navTicking = false;
+addEventListener("scroll", () => {
+  if (navTicking) return;
+  navTicking = true;
+  requestAnimationFrame(() => {
+    updateActiveNav();
+    navTicking = false;
+  });
+}, { passive: true });
+updateActiveNav();
+
+// ——————————————————————————————————————————————
+// 5. CONTACT FORM — success notice after FormSubmit redirect
 // ——————————————————————————————————————————————
 if (new URLSearchParams(location.search).has("sent")) {
   const status = $("#form-status");
